@@ -1,5 +1,9 @@
 package main
 
+////////////////////////////////////////////////////
+/// Command line interface for interacting with ///
+//              blacklist database             //
+///////////////////////////////////////////////
 import (
 	"os"
 
@@ -53,11 +57,8 @@ func main() {
 	app.Name = "blacklist"
 	app.Usage = "Simple blacklist lookup cli"
 
-	// Change the version string with updates so that a quick help command will
-	// let the testers know what version of HT they're on
 	app.Version = "0.0.1"
 
-	// Define commands used with this application
 	app.Commands = allCommands
 
 	app.Run(os.Args)
