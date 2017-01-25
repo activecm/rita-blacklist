@@ -4,8 +4,8 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/ocmdev/blacklist/datatypes"
-	"github.com/ocmdev/blacklist/hostlist"
+	"github.com/ocmdev/rita-blacklist/datatypes"
+	"github.com/ocmdev/rita-blacklist/hostlist"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )

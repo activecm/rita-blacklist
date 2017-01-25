@@ -1,8 +1,8 @@
 package database
 
 import (
-	"github.com/ocmdev/blacklist/datatypes"
-	"github.com/ocmdev/blacklist/hostlist"
+	"github.com/ocmdev/rita-blacklist/datatypes"
+	"github.com/ocmdev/rita-blacklist/hostlist"
 )
 
 const HostTableName = "blacklistHosts"

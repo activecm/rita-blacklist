@@ -1,6 +1,6 @@
 package hostlist
 
-import "github.com/ocmdev/blacklist/datatypes"
+import "github.com/ocmdev/rita-blacklist/datatypes"
 
 type (
 

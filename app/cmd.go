@@ -7,7 +7,7 @@ package main
 import (
 	"os"
 
-	"github.com/ocmdev/blacklist"
+	"github.com/ocmdev/rita-blacklist"
 	"github.com/urfave/cli"
 )
 

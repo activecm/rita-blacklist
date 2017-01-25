@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ocmdev/blacklist/datatypes"
+	"github.com/ocmdev/rita-blacklist/datatypes"
 )
 
 // URL to retrieve this list

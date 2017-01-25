@@ -4,9 +4,9 @@ import (
 	"log"
 	"sync"
 
-	"github.com/ocmdev/blacklist/database"
-	"github.com/ocmdev/blacklist/datatypes"
-	"github.com/ocmdev/blacklist/hostlist"
+	"github.com/ocmdev/rita-blacklist/database"
+	"github.com/ocmdev/rita-blacklist/datatypes"
+	"github.com/ocmdev/rita-blacklist/hostlist"
 )
 
 type (
@@ -41,6 +41,8 @@ func (b *BlackList) Init(host string, port int, dbname string) {
 
 		// Ensure the source is still valid
 		if !val.ValidList(sourceInfo) {
+
+			log.Println("Updating blacklist source: ", val.Name(), ". This may take a few minutes...")
 
 			// Remove all host entries from this source
 			b.Db.RemoveHostList(val, dbname)
