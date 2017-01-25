@@ -12,6 +12,9 @@ import (
 	"github.com/ocmdev/blacklist/datatypes"
 )
 
+const MyIpMsUrl = "https://myip.ms/files/blacklist/general/full_blacklist_database.zip"
+const DownloadLocation = "/tmp/myipms_full.zip"
+
 type (
 	MyIpMs struct {
 	}
@@ -24,7 +27,7 @@ func (m *MyIpMs) downloadFile(fname string) error {
 	}
 	defer out.Close()
 
-	resp, err := http.Get("https://myip.ms/files/blacklist/general/full_blacklist_database.zip")
+	resp, err := http.Get(MyIpMsUrl)
 	defer resp.Body.Close()
 
 	if err != nil {
@@ -64,7 +67,7 @@ func (m *MyIpMs) readZipFile(fname string, line chan string) error {
 }
 
 func (m *MyIpMs) UpdateList(c chan datatypes.BlacklistHost) error {
-	err := m.downloadFile("/tmp/myipms_full.zip")
+	err := m.downloadFile(DownloadLocation)
 	if err != nil {
 		return err
 	}
@@ -74,7 +77,7 @@ func (m *MyIpMs) UpdateList(c chan datatypes.BlacklistHost) error {
 	// var wg sync.WaitGroup
 	// wg.Add(1)
 	go func(line chan string) {
-		m.readZipFile("/tmp/myipms_full.zip", line)
+		m.readZipFile(DownloadLocation, line)
 		// wg.Done()
 		close(line)
 	}(line)
@@ -116,7 +119,7 @@ func (m *MyIpMs) Name() string {
 func (m *MyIpMs) MetaData() MetaData {
 	var ret MetaData
 	ret.Name = m.Name()
-	ret.Url = "https://myip.ms/files/blacklist/general/full_blacklist_database.zip"
+	ret.Url = MyIpMsUrl
 	ret.LastUpdate = time.Now().Unix()
 	return ret
 }
