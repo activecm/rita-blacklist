@@ -1,5 +1,6 @@
 # rita-blacklist
-##### Real Intelligence Threat Analytics -- Blacklist Database
+#### Real Intelligence Threat Analytics -- Blacklist Database 
+#### Version 0.1
 
 An API to store, maintain, and retrieve IP/URL blacklists.
 
