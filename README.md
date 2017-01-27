@@ -1,6 +1,6 @@
 # rita-blacklist
 ##### Real Intelligence Threat Analytics -- Blacklist Database
 
-A blacklisted host database.
+An API to store, maintain, and retrieve IP/URL blacklists.
 
-Work in progress. Check back soon!
+![Alt text](img/diagram.png?raw=true "rita-blacklist diagram")
