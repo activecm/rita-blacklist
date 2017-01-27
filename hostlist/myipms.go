@@ -3,11 +3,15 @@ package hostlist
 import (
 	"archive/zip"
 	"bufio"
+	"errors"
 	"io"
+	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/ocmdev/rita-blacklist/datatypes"
 )
@@ -20,6 +24,13 @@ const DownloadLocation = "/tmp/myipms_full.zip"
 
 type (
 	MyIpMs struct {
+	}
+
+	blInfo struct {
+		date        string
+		host        string
+		country     string
+		blacklistId int
 	}
 )
 
@@ -85,6 +96,49 @@ func (m *MyIpMs) readZipFile(fname string, line chan string) error {
 	return nil
 }
 
+// Parse a line from the myip.ms dataset
+func (m *MyIpMs) parseLine(line string) (datatypes.BlacklistHost, error) {
+	var ret datatypes.BlacklistHost
+
+	if len(line) < 1 {
+		return ret, errors.New("Empty Line")
+	}
+
+	wsRemoved := ""
+	for _, ch := range line {
+		if !unicode.IsSpace(ch) {
+			wsRemoved = wsRemoved + string(ch)
+		}
+	}
+
+	if len(wsRemoved) > 0 && wsRemoved[0] == '#' {
+		return ret, errors.New("Comment Line")
+	}
+
+	final := strings.Replace(wsRemoved, "#", ",", -1)
+	split := strings.Split(final, ",")
+
+	if len(split) < 5 {
+		return ret, errors.New("Missing Field")
+	}
+
+	ret.Host = split[0]
+	ret.HostList = m.Name()
+
+	id, err := strconv.Atoi(split[4])
+	if err != nil {
+		id = -1
+	}
+	ret.Info = blInfo{
+		date:        split[1],
+		host:        split[2],
+		country:     split[3],
+		blacklistId: id,
+	}
+
+	return ret, nil
+}
+
 // Update the list of blacklisted sources.
 func (m *MyIpMs) UpdateList(c chan datatypes.BlacklistHost) error {
 
@@ -104,18 +158,19 @@ func (m *MyIpMs) UpdateList(c chan datatypes.BlacklistHost) error {
 	}(line)
 
 	// Obtain and parse lines from the blacklist file.
-	// TODO: Develop this parser / split into function.
+	parseCount := 0
+	total := 0
 	for l := range line {
-		if len(l) > 0 && l[0] == '#' {
-			continue
+		host, err := m.parseLine(l)
+		if err != nil {
+			c <- host
+		} else {
+			parseCount += 1
 		}
-		split := strings.Split(l, "\t")
-
-		var host datatypes.BlacklistHost
-		host.Host = split[0]
-		host.HostList = m.Name()
-		c <- host
+		total += 1
 	}
+
+	log.Printf("Blacklist: %s parsed %d of %d lines in file.", m.Name(), parseCount, total)
 
 	return nil
 }
