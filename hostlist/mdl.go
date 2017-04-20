@@ -1,4 +1,4 @@
-vscpackage hostlist
+package hostlist
 
 // TODO: More error checking
 
@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 	"time"
+  "unicode"
 
 	"github.com/ocmdev/rita-blacklist/datatypes"
 )
@@ -19,17 +20,10 @@ import (
 const MdlUrl = "http://www.malwaredomainlist.com/mdlcsv.php"
 
 // Location to download list
-const DownloadLocation = "/tmp/export.csv"
+const MdlDlLoc = "/tmp/export.csv"
 
 type (
 	Mdl struct {
-	}
-
-	blInfo struct {
-		date        string
-		host        string
-		country     string
-		blacklistId int
 	}
 )
 
@@ -92,32 +86,42 @@ func (m *Mdl) parseLine(line string) (datatypes.BlacklistHost, error) {
 		return ret, errors.New("Empty Line")
 	}
 
-  // no unecessary white space in this file so we don't need to remove it
-  // also no comments so we don't need to remove those
+  wsRemoved := ""
+  for _, ch := range line {
+    if !unicode.IsSpace(ch) {
+      wsRemoved = wsRemoved + string(ch)
+    }
+  }
 
-	split := strings.Split(final, ",")
+  // The first character will be a quotation mark so check second
+  if len(wsRemoved) > 1 && wsRemoved[1] == '#' {
+    return ret, errors.New("Comment Line")
+  }
+
+  // Can't just split on comma in case one of the fields contains a comma
+  // Splitting on "," instead will insure we're splitting between fields
+  // Also saves us the trouble of trimming quote marks on every field
+	split := strings.Split(wsRemoved, "\",\"")
 
 	if len(split) < 9 {
 		return ret, errors.New("Missing Field")
 	}
 
-	ret.Host = strings.Trim(split[2], "\"")
+	ret.Host = split[2]
 	ret.HostList = m.Name()
 
-  host := strings.Trim(split[1], "\"")
+  host := split[1]
   if host == "-" {
     // If there isn't a host name just give it the ip
     host = ret.Host
   }
 
 	ret.Info = blInfo{
-		date:        strings.Trim(split[0], "\""),
+		date:        strings.TrimPrefix(split[0], "\""),
 		host:        host,
-		country:     strings.Trim(split[8], "\""),
+		country:     strings.TrimSuffix(split[8], "\""),
 		blacklistId: -1,
 	}
-
-  fmt.Println(ret.Info)
 
 	return ret, nil
 }
@@ -126,7 +130,7 @@ func (m *Mdl) parseLine(line string) (datatypes.BlacklistHost, error) {
 func (m *Mdl) UpdateList(c chan datatypes.BlacklistHost) error {
 
 	// Download new blacklist file.
-	err := m.downloadFile(DownloadLocation)
+	err := m.downloadFile(MdlDlLoc)
 	if err != nil {
 		return err
 	}
@@ -136,7 +140,7 @@ func (m *Mdl) UpdateList(c chan datatypes.BlacklistHost) error {
 
 	// Read data from the csv file in a new thread.
 	go func(line chan string) {
-		m.readZipFile(DownloadLocation, line)
+		m.readCsvFile(MdlDlLoc, line)
 		close(line)
 	}(line)
 
@@ -167,7 +171,8 @@ func (m *Mdl) ValidList(mdata MetaData) bool {
 	}
 
 	// Check the time duration since the last time this file was updated
-	// For this list, older than 8 days is not valid.
+	// For IPMS, older than 8 days was not valid so I left it at that for list
+  // At least until I know better?
 	lastUpdate := time.Unix(mdata.LastUpdate, 0)
 	since := time.Since(lastUpdate)
 	ret := false

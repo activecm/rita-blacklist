@@ -1,7 +1,5 @@
 package hostlist
 
-// TODO: Add more valid test cases
-
 import (
 	"fmt"
 	"reflect"
@@ -11,12 +9,12 @@ import (
 	"github.com/ocmdev/rita-blacklist/datatypes"
 )
 
-type testcase struct {
+/*type testcase struct {
 	line string
 	err  bool
-}
+}*/
 
-var tests = []testcase{
+var mdlTests = []testcase{
 	{"\"2001/01/02_00:00\",\"-\",\"1.2.3.4\",\"-\",\"Trojan\",\"-\",\"33314\",\"0\",\"US\",", false},
 	{"\"#2001/01/02_00:00\",\"-\",\"1.2.3.4\",\"-\",\"Trojan\",\"-\",\"33314\",\"0\",\"US\"", true},
 	{"\"2001/01/02_00:00\",\"-\",\"1.2.3.4\",\"-\",\"Trojan\",\"-\",", true},
@@ -24,7 +22,7 @@ var tests = []testcase{
 	{"", true},
 }
 
-func formatResult(blhost datatypes.BlacklistHost) string {
+func formatMdlResult(blhost datatypes.BlacklistHost) string {
 	v := reflect.ValueOf(blhost)
 
 	var ret string
@@ -37,11 +35,11 @@ func formatResult(blhost datatypes.BlacklistHost) string {
 	return ret
 }
 
-func TestParse(t *testing.T) {
-	m := MyIpMs{}
-	for _, test := range tests {
+func TestMdlParse(t *testing.T) {
+	m := Mdl{}
+	for _, test := range mdlTests {
 		res, err := m.parseLine(test.line)
-		t.Logf("---> \"%s\"\n\tExpected Error:%s%s", test.line, strconv.FormatBool(test.err), formatResult(res))
+		t.Logf("---> \"%s\"\n\tExpected Error:%s%s", test.line, strconv.FormatBool(test.err), formatMdlResult(res))
 		if (err != nil) != test.err {
 			t.Fail()
 		}
