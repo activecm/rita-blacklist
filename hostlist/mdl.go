@@ -20,7 +20,7 @@ import (
 const MdlUrl = "http://www.malwaredomainlist.com/mdlcsv.php"
 
 // Location to download list
-const MdlDlLoc = "/tmp/export.csv"
+const MdlDownloadLoc = "/tmp/mdl_full.csv"
 
 type (
 	Mdl struct {
@@ -130,7 +130,7 @@ func (m *Mdl) parseLine(line string) (datatypes.BlacklistHost, error) {
 func (m *Mdl) UpdateList(c chan datatypes.BlacklistHost) error {
 
 	// Download new blacklist file.
-	err := m.downloadFile(MdlDlLoc)
+	err := m.downloadFile(MdlDownloadLoc)
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func (m *Mdl) UpdateList(c chan datatypes.BlacklistHost) error {
 
 	// Read data from the csv file in a new thread.
 	go func(line chan string) {
-		m.readCsvFile(MdlDlLoc, line)
+		m.readCsvFile(MdlDownloadLoc, line)
 		close(line)
 	}(line)
 

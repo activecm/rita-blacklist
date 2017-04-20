@@ -1,5 +1,7 @@
 package hostlist
 
+// TODO: test that the file is opening and being read correctly
+
 import (
 	"fmt"
 	"reflect"
