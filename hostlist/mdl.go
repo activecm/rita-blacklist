@@ -171,12 +171,11 @@ func (m *Mdl) ValidList(mdata MetaData) bool {
 	}
 
 	// Check the time duration since the last time this file was updated
-	// For IPMS, older than 8 days was not valid so I left it at that for list
-  // At least until I know better?
+	// For this list older than 1 year is not valid
 	lastUpdate := time.Unix(mdata.LastUpdate, 0)
 	since := time.Since(lastUpdate)
 	ret := false
-	if since.Hours() < (8 * 24) {
+	if since.Hours() < (365 * 24) {
 		ret = true
 	}
 
