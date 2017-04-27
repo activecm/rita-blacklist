@@ -162,7 +162,7 @@ func (m *MyIpMs) UpdateList(c chan datatypes.BlacklistHost) error {
 	total := 0
 	for l := range line {
 		host, err := m.parseLine(l)
-		if err != nil {
+		if err == nil {
 			c <- host
 		} else {
 			parseCount += 1
