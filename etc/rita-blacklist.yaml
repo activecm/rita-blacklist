@@ -1,0 +1,17 @@
+# Custom Blacklist information if user chooses to use custom
+# ValTime should be given in days of validity
+# ValTime and Name are optional, ValTime's default value is 36,500 and Name's
+#   default is Location
+CustomBlacklist:
+  -
+    Location: https://location.of/list.csv
+    ValTime:  Validity time in days
+    Name:     Name
+  -
+    Location: /path/to/file.csv
+    ValTime:  Validity time in days
+    Name:     Name
+
+# Use Custom Blacklist: if true will add the sources listed under
+#   CustomBlacklist to the blacklist data
+UseCustomBlacklist: false
