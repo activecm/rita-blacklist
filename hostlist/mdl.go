@@ -1,7 +1,5 @@
 package hostlist
 
-// TODO: More error checking
-
 import (
 	"bufio"
 	"errors"
@@ -53,7 +51,6 @@ func (m *Mdl) downloadFile(fname string) error {
 
 // Read the contents of the downloaded csv file.
 func (m *Mdl) readCsvFile(fname string, line chan string) error {
-	log.Println(fname)
 	// Open file.
 	rc, err := os.Open(fname)
 	if err != nil {

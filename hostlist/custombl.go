@@ -1,26 +1,3 @@
-/* TODO:
-      - Documentation describing required file layout (csv with any comments
-          preceeded with #)
-      - One module for url one for file loc? Or one for both?
-      - Look through current blacklist code to determine if custom can readily
-          fit in or if that needs reworking
-
-  Functions:
-    Still Writing:
-      - updateList
-      - newCustomList
-    Waiting on Info:
-      - N/A
-    Written Not Tested:
-      - downloadFile
-      - readFile
-      - parseLine
-      - init
-      - MetaData
-      - isURL
-      - Name
-      - ValidList
-*/
 package hostlist
 
 import (
@@ -92,6 +69,7 @@ func (m *customList) readFile(fname string, line chan string) error {
   // Open file
   f, err := os.Open(fname)
   if err != nil {
+    log.Println("Error reading:", err)
     return err
   }
 
@@ -211,7 +189,11 @@ func (m *customList) UpdateList(c chan datatypes.BlacklistHost) error {
 		total += 1
 	}
 
-	log.Printf("Blacklist: %s parsed %d of %d lines in file.", m.name, parseCount, total)
+  if total == 0 {
+    log.Printf("Could not read blacklist %s", m.name)
+  } else {
+	   log.Printf("Blacklist: %s parsed %d of %d lines in file.", m.name, parseCount, total)
+  }
 
 	return nil
 }
@@ -283,39 +265,56 @@ func init() {
   - add logging of errors if we want that
 */
 func newCustomList(src *config.CustomBlacklistCfg) (HostList, bool) {
+  ret := customList{}
+  // parse name from config struct
+  ret.name = src.Name
+
   // parse source location from config struct
-  srcloc := src.Location
-  if srcloc == "" {
-    // TODO: log error with loc
-    return &customList{}, false
+  ret.loc = src.Location
+  _, err := ret.isValidUrl()
+  if err != nil {
+    if ret.name != "" {
+      log.Printf("Custom blacklist %s has an invalid location", ret.name)
+    }
+    return &ret, false
+  }
+
+  // if there isn't a name just use location
+  if ret.name == "" {
+    ret.name = ret.loc
   }
 
   // parse validity time from config struct
   valstr := src.ValTime
-  valflt, err := strconv.ParseFloat(valstr, 64)
+  ret.daysValid, err = strconv.ParseFloat(valstr, 64)
+  // if it was left blank we don't need an error message
   if err != nil {
-    // TODO: log that there was an error with validity time
-    valflt = 36500.0
+    // don't print error if val time was left blank
+    if valstr != "" {
+      log.Printf("Custom blacklist %s has an invalid validity time. Using default validity time instead.", ret.name)
+    }
+    ret.daysValid = 36500.0
   }
 
-  // parse name from config struct
-  name := src.Name
-  if name == "" {
-    name = srcloc
-  }
-
-  return &customList{loc: src.Location, daysValid: valflt, name: name}, true
+  return &ret, true
 }
 
 // Determines whether the location is a url
 func (m *customList) isValidUrl() (bool, error) {
   u, err := url.ParseRequestURI(m.loc)
   if err != nil {
+    return false, errors.New("Invalid URL or file path")
+  }
+
+  // check the url scheme for validity
+  if u.Scheme == "http" || u.Scheme == "https" {
+    return true, nil
+  }
+
+  // check if it's a file location
+  if u.Scheme == "" && u.Path != "" {
     return false, nil
   }
-  // check the url scheme for validity
-  if u.Scheme != "http" && u.Scheme != "https" {
-    return false, errors.New("Invalid URL Scheme")
-  }
-  return true, nil
+
+  return true, errors.New("Invalid URL Scheme")
 }

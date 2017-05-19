@@ -23,13 +23,19 @@ var customParseTests = []testcase{
 	{"", true},
 }
 
+// getting false with an err means an invalid file or URL path,
+// getting true with an err means an invalid scheme on the URL (we only accept http and https)
+// getting true without an err means a valid URL
+// getting false without an err means a valid file path
 var customIsURLTests = []urltestcase{
   {"/file.txt", false, false},
   {"/folder/file.txt", false, false},
-  {"domain.com", false, false},
+	{"/folder/folder/folder/file.txt", false, false},
+  {"domain.com", false, true},
 	{"https://www.domain.com/file.csv", true, false},
 	{"scheme://domain.com/file.csv", true, true},
   {"http://domain.com", true, false},
+	{"", false, true},
 }
 
 
@@ -57,12 +63,20 @@ func TestCustomParse(t *testing.T) {
 	}
 }
 
+func FormatUrlResult(isUrl bool, e bool) string {
+	var ret string
+	ret += "\n\n"
+	ret += fmt.Sprintf("\tIs URL:\t\t%s\n\tGot Error:\t%s", strconv.FormatBool(isUrl), strconv.FormatBool(e))
+	return ret
+}
+
 func TestIsUrl(t *testing.T) {
 	for _, test := range customIsURLTests {
     m := customList{loc: test.line}
 		isUrl, err := m.isValidUrl()
-		t.Logf("---> \"%s\"\n\tExpected isUrl Result:%s%s", test.line, strconv.FormatBool(test.isUrl),"---> \"%s\"\n\tExpected Error:%s%s", strconv.FormatBool(test.err))
-		if isUrl != test.isUrl && (err != nil) != test.err {
+		gotErr := err != nil
+		t.Logf("---> \"%s\"\n\tExpected URL:\t%s\n\tExpected Error:\t%s%s", test.line, strconv.FormatBool(test.isUrl), strconv.FormatBool(test.err), FormatUrlResult(isUrl, gotErr))
+		if isUrl != test.isUrl || gotErr != test.err {
 			t.Fail()
 		}
 	}
