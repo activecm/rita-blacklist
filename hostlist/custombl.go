@@ -11,12 +11,11 @@ import (
 	"time"
   "unicode"
   "strconv"
+  "net/url"
 
-	"github.com/carrohan/rita-blacklist/config"
+	"github.com/ocmdev/rita-blacklist/config"
 	"github.com/ocmdev/rita-blacklist/datatypes"
 )
-
-const ConfigLoc = "/rita/etc/rita-blacklist.yaml"
 
 type (
   customList struct {
@@ -33,10 +32,6 @@ type (
 
 
 // Download the blacklist file
-/* TODO:
-  - Make sure this is all we need
-  - Basically just test
-*/
 func (m *customList) downloadFile(fname string) error {
   // create file to copy data into
   out, err := os.Create(fname)
@@ -61,10 +56,6 @@ func (m *customList) downloadFile(fname string) error {
 
 
 // Reads the contents of the custom blacklist file
-/* TODO:
-  - Make sure this is all we need
-  - Basically just test
-*/
 func (m *customList) readFile(fname string, line chan string) error {
   // Open file
   f, err := os.Open(fname)
@@ -93,10 +84,6 @@ func (m *customList) readFile(fname string, line chan string) error {
 
 
 // Parse a line from the current dataset
-/* TODO:
-  - Make sure this is all we need
-  - Basically just test
-*/
 func (m *customList) parseLine(line string) (datatypes.BlacklistHost, error) {
 	var ret datatypes.BlacklistHost
 
@@ -134,9 +121,6 @@ func (m *customList) parseLine(line string) (datatypes.BlacklistHost, error) {
 
 
 // Update the list of blacklisted sources
-/* TODO:
-  -
-*/
 func (m *customList) UpdateList(c chan datatypes.BlacklistHost) error {
   var fname string
   // check if this custom list location is a url or a file
@@ -199,9 +183,6 @@ func (m *customList) UpdateList(c chan datatypes.BlacklistHost) error {
 }
 
 // Check if the metadata passed in is still considered valid
-/* TODO:
-  - test
-*/
 func (m *customList) ValidList(mdata MetaData) bool {
   // Make sure date last updated is available
   if mdata.LastUpdate < 1 {
@@ -221,18 +202,12 @@ func (m *customList) ValidList(mdata MetaData) bool {
 
 
 // Return the name of this source
-/* TODO:
-  - If each source gets its own name just pull that out instead
-*/
 func (m *customList) Name() string {
   return m.name
 }
 
 
 // Return meta data about this source (to be stored in database)
-/* TODO:
-  - test
-*/
 func (m *customList) MetaData() MetaData {
   var ret MetaData
   ret.Name = m.name
@@ -243,12 +218,9 @@ func (m *customList) MetaData() MetaData {
 
 
 // Initialization
-/* TODO:
-  - test
-*/
 func init() {
   // only init if user wants to use a custom blacklist
-  conf, ok := config.GetConfig(ConfigLoc)
+  conf, ok := config.GetConfig()
   if ok && conf.UseCustomBlacklist {
     // add host list for each list in config file
     for _, src := range conf.CustomBlacklistCfg {
@@ -261,9 +233,6 @@ func init() {
 }
 
 // Return a new instance of a custom source
-/* TODO:
-  - add logging of errors if we want that
-*/
 func newCustomList(src *config.CustomBlacklistCfg) (HostList, bool) {
   ret := customList{}
   // parse name from config struct
