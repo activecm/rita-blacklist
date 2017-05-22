@@ -3,7 +3,6 @@ package hostlist
 import (
   "bufio"
 	"errors"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +11,7 @@ import (
   "unicode"
   "strconv"
   "net/url"
+  "io/ioutil"
 
 	"github.com/ocmdev/rita-blacklist/config"
 	"github.com/ocmdev/rita-blacklist/datatypes"
@@ -26,21 +26,13 @@ type (
 
   customBlInfo struct {
    host     string
-   country  string
  }
 )
 
 
 // Download the blacklist file
-func (m *customList) downloadFile(fname string) error {
-  // create file to copy data into
-  out, err := os.Create(fname)
-  if err != nil {
-    return err
-  }
-  defer out.Close()
-
-  // retrieve file from url
+func (m *customList) downloadFile(line chan string) error {
+  // retrieve blacklist from url
   resp, err := http.Get(m.loc)
   defer resp.Body.Close()
 
@@ -48,17 +40,27 @@ func (m *customList) downloadFile(fname string) error {
     return err
   }
 
-  // copy http response into file
-  _, err = io.Copy(out, resp.Body)
+  body, err := ioutil.ReadAll(resp.Body)
+  if err != nil {
+    return err
+  }
 
-  return err
+  blstr := string(body)
+
+  // split blacklist into lines
+  blsplit := strings.Split(string(blstr), "\n")
+  for _, l := range blsplit {
+    line <- l
+  }
+
+  return nil
 }
 
 
 // Reads the contents of the custom blacklist file
-func (m *customList) readFile(fname string, line chan string) error {
+func (m *customList) readFile(line chan string) error {
   // Open file
-  f, err := os.Open(fname)
+  f, err := os.Open(m.loc)
   if err != nil {
     log.Println("Error reading:", err)
     return err
@@ -104,16 +106,26 @@ func (m *customList) parseLine(line string) (datatypes.BlacklistHost, error) {
 
   split := strings.Split(wsRemoved, ",")
 
-  if len(split) < 3 {
+  if len(split) < 2 {
     return ret, errors.New("Missing Field")
   }
 
-  ret.Host = split[1]
+  ip := split[1]
+  domain := split[0]
+
+  if domain == "" && ip == "" {
+    return ret, errors.New("Missing Field")
+  } else if domain == "" {
+    domain = "-"
+  } else if ip == "" {
+    ip = "-"
+  }
+
+  ret.Host = ip
   ret.HostList = m.Name()
 
   ret.Info = customBlInfo {
-    host:     split[0],
-    country:  split[2],
+    host:     domain,
   }
 
   return ret, nil
@@ -122,7 +134,6 @@ func (m *customList) parseLine(line string) (datatypes.BlacklistHost, error) {
 
 // Update the list of blacklisted sources
 func (m *customList) UpdateList(c chan datatypes.BlacklistHost) error {
-  var fname string
   // check if this custom list location is a url or a file
   isUrl, err := m.isValidUrl()
 
@@ -130,35 +141,22 @@ func (m *customList) UpdateList(c chan datatypes.BlacklistHost) error {
     return err
   }
 
-  if isUrl {
-    // if URL download file
-    // create a file name from this source's name
-    fname = "/tmp/"
-    for _, ch := range m.name {
-      if unicode.IsLetter(ch) || unicode.IsDigit(ch) {
-        fname = fname + string(ch)
-      }
-    }
-    fname = fname + ".csv"
-
-    // download file
-    err := m.downloadFile(fname)
-    if err != nil {
-      return err
-    }
-  } else {
-    fname = m.loc
-  }
-
-  // create a channel for reading from the file
+  // create a channel for reading the blacklist
   line := make(chan string)
 
-
-  // read data from the file in a new thread
-  go func(line chan string) {
-    m.readFile(fname, line)
-    close(line)
-  }(line)
+  if isUrl {
+    // read data in a new thread
+    go func(line chan string) {
+      m.downloadFile(line)
+      close(line)
+    }(line)
+  } else {
+    // read data from the file in a new thread
+    go func(line chan string) {
+      m.readFile(line)
+      close(line)
+    }(line)
+  }
 
 	// Obtain and parse lines from the blacklist file.
 	parseCount := 0
