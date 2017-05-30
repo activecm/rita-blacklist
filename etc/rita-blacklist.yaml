@@ -5,7 +5,7 @@
 # the line should look like:
 #  , 1.2.3.4
 # and if ip is missing the line should look like:
-# domain.com, 
+# domain.com,
 # a dash (-) is also acceptable in place of the missing field.
 # Any values beyond the first two values won't be entered into the database, but
 # won't cause any issues with parsing. If a line begins with a '#' it will be

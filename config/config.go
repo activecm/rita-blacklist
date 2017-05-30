@@ -14,15 +14,15 @@ var VERSION = "undefined"
 
 type (
 	SystemConfig struct {
-		UseCustomBlacklist  bool              		`yaml:"UseCustomBlacklist"`
-    CustomBlacklistCfg  []CustomBlacklistCfg	`yaml:"CustomBlacklist"`
-		Version							string
+		UseCustomBlacklist bool                 `yaml:"UseCustomBlacklist"`
+		CustomBlacklistCfg []CustomBlacklistCfg `yaml:"CustomBlacklist"`
+		Version            string
 	}
 
 	CustomBlacklistCfg struct {
-		Location  string `yaml:"Location"`
-		ValTime 	string `yaml:"ValTime"`
-		Name    	string `yaml:"Name"`
+		Location string `yaml:"Location"`
+		ValTime  string `yaml:"ValTime"`
+		Name     string `yaml:"Name"`
 	}
 )
 
