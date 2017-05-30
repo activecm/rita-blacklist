@@ -204,7 +204,7 @@ func (m *MyIpMs) Name() string {
 func (m *MyIpMs) MetaData() MetaData {
 	var ret MetaData
 	ret.Name = m.Name()
-	ret.Url = MyIpMsUrl
+	ret.Src = MyIpMsUrl
 	ret.LastUpdate = time.Now().Unix()
 	return ret
 }

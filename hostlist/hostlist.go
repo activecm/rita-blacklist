@@ -15,7 +15,7 @@ type (
 	// Information about a blacklist source
 	MetaData struct {
 		Name       string
-		Url        string
+		Src        string
 		LastUpdate int64
 		FileHash   string
 	}

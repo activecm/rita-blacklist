@@ -1,0 +1,32 @@
+# Custom Blacklist files should be comma separated, with one line per desired
+# blacklist entry. The first value should be the domain/host, the second value
+# the ip. Only domain or ip is required, but if one is missing there should
+# still be an empty place for it in the file. For example, if domain is missing
+# the line should look like:
+#  , 1.2.3.4
+# and if ip is missing the line should look like:
+# domain.com,
+# a dash (-) is also acceptable in place of the missing field.
+# Any values beyond the first two values won't be entered into the database, but
+# won't cause any issues with parsing. If a line begins with a '#' it will be
+# considered a comment. but a '#' appearing later in a line will not comment out
+# what comes after it.
+# Location must be http, https, or an absolute file location, and is required.
+# Name is optional. If left blank, it will be set to equal the location.
+# ValTime is the number of days between updating that particular blacklist. It
+#   is optional, and if left blank will be set to 36,500.
+
+# Custom Blacklist: describes the sources of the custom blacklist files.
+CustomBlacklist:
+  -
+    Location: https://location.of/list.csv
+    ValTime:  Validity time in days
+    Name:     Name
+  -
+    Location: /path/to/file.csv
+    ValTime:  Validity time in days
+    Name:     Name
+
+# Use Custom Blacklist: if true will add the sources listed under
+#   CustomBlacklist to the blacklist data
+UseCustomBlacklist: false
