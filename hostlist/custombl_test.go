@@ -10,9 +10,9 @@ import (
 )
 
 type urltestcase struct {
-	line string
-	isUrl  bool
-	err		 bool
+	line  string
+	isUrl bool
+	err   bool
 }
 
 var customParseTests = []testcase{
@@ -28,16 +28,15 @@ var customParseTests = []testcase{
 // getting true without an err means a valid URL
 // getting false without an err means a valid file path
 var customIsURLTests = []urltestcase{
-  {"/file.txt", false, false},
-  {"/folder/file.txt", false, false},
+	{"/file.txt", false, false},
+	{"/folder/file.txt", false, false},
 	{"/folder/folder/folder/file.txt", false, false},
-  {"domain.com", false, true},
+	{"domain.com", false, true},
 	{"https://www.domain.com/file.csv", true, false},
 	{"scheme://domain.com/file.csv", true, true},
-  {"http://domain.com", true, false},
+	{"http://domain.com", true, false},
 	{"", false, true},
 }
-
 
 func formatCustomResult(blhost datatypes.BlacklistHost) string {
 	v := reflect.ValueOf(blhost)
@@ -72,7 +71,7 @@ func FormatUrlResult(isUrl bool, e bool) string {
 
 func TestIsUrl(t *testing.T) {
 	for _, test := range customIsURLTests {
-    m := customList{loc: test.line}
+		m := customList{loc: test.line}
 		isUrl, err := m.isValidUrl()
 		gotErr := err != nil
 		t.Logf("---> \"%s\"\n\tExpected URL:\t%s\n\tExpected Error:\t%s%s", test.line, strconv.FormatBool(test.isUrl), strconv.FormatBool(test.err), FormatUrlResult(isUrl, gotErr))
