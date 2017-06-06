@@ -170,7 +170,7 @@ func (m *customList) UpdateList(c chan datatypes.BlacklistHost) error {
 	if total == 0 {
 		log.Printf("Could not read blacklist %s", m.name)
 	} else {
-		log.Printf("Blacklist: %s parsed %d of %d lines in file.", m.name, parseCount, total)
+		log.Printf("Successfully read and added %d of %d lines from %s. %d line(s) could not be read.", (total - parseCount), total, m.name, parseCount)
 	}
 
 	return nil
