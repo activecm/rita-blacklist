@@ -170,7 +170,7 @@ func (m *MyIpMs) UpdateList(c chan datatypes.BlacklistHost) error {
 		total += 1
 	}
 
-	log.Printf("Blacklist: %s parsed %d of %d lines in file.", m.Name(), parseCount, total)
+	log.Printf("Successfully read and added %d of %d lines from %s. %d line(s) could not be read.", (total - parseCount), total, m.Name(), parseCount)
 
 	return nil
 }
